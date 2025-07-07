@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Candidate Results</title>
+
+    <div style="text-align: right; margin-bottom: 10px;">
+        <a href="{% url 'export_csv' %}">
+            <button style="padding: 6px 12px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                ⬇️ Download CSV
+            </button>
+        </a>
+    </div>
+
+    <style>
+        body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+        h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+        th { background: #e0e0e0; }
+        a { text-decoration: none; color: blue; }
+    </style>
+</head>
+<body>
+    <h2>All SSC Candidates</h2>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Roll No</th>
+            <th>Subject</th>
+            <th>Total Marks</th>
+            <th>Bonus Marks</th>
+            <th>Answer Key</th>
+        </tr>
+        {% for c in candidates %}
+        <tr>
+            <td>{{ c.name }}</td>
+            <td>{{ c.roll_number }}</td>
+            <td>{{ c.subject }}</td>
+            <td>{{ c.total_marks }}</td>
+            <td>{{ c.bonus_marks }}</td>
+            <td><a href="{{ c.answer_key_link }}" target="_blank">View</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

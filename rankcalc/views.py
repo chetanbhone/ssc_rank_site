@@ -5,6 +5,8 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from bs4 import BeautifulSoup
 from .models import Candidate
+import csv
+
 
 MARKS_PER_CORRECT = 2
 NEGATIVE_MARKING = 1 / 4
@@ -31,7 +33,7 @@ def calculate_rank(request):
 
         info, total_marks, bonus_marks, bonus_questions = result
 
-        # Save to DB
+        # ✅ Just Save Every Time for Our Record (no check)
         Candidate.objects.create(
             roll_number=info["Roll Number"],
             name=info["Candidate Name"],
@@ -45,6 +47,7 @@ def calculate_rank(request):
             answer_key_link=url
         )
 
+        # ✅ Always show the result to the student
         return render(request, "rankcalc/home.html", {
             "success": True,
             "info": info,
@@ -55,6 +58,8 @@ def calculate_rank(request):
         })
 
     return render(request, "rankcalc/home.html")
+
+
 
 # ---------- PARSING FUNCTION ----------
 async def parse_rankguruji_style(url: str):
@@ -119,3 +124,38 @@ async def parse_rankguruji_style(url: str):
     except Exception as e:
         print("Error parsing:", str(e))
         return None
+
+def all_results(request):
+    candidates = Candidate.objects.all().order_by('-id')  # latest first
+    return render(request, 'rankcalc/results.html', {'candidates': candidates})
+
+
+def export_candidates_csv(request):
+    # Create HTTP response with CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="ssc_candidates.csv"'
+
+    writer = csv.writer(response)
+    # Write header
+    writer.writerow([
+        'Roll Number', 'Name', 'Venue', 'Exam Date',
+        'Exam Time', 'Subject', 'Total Marks',
+        'Bonus Marks', 'Bonus Questions', 'Answer Key Link'
+    ])
+
+    # Write all candidate data
+    for c in Candidate.objects.all():
+        writer.writerow([
+            c.roll_number,
+            c.name,
+            c.venue,
+            c.exam_date,
+            c.exam_time,
+            c.subject,
+            c.total_marks,
+            c.bonus_marks,
+            c.bonus_questions,
+            c.answer_key_link
+        ])
+
+    return response    
